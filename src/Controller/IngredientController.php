@@ -26,7 +26,7 @@ class IngredientController extends AbstractController
       * @return Response
       */
 
-    #[Route('/ingredient', name: 'app_ingredient', methods: ['GET'])]
+    #[Route('/ingredient', name: 'ingredient', methods: ['GET'])]
     public function index(IngredientRepository $repository, PaginatorInterface $paginator, Request $request): Response
     {
         $ingredients = $paginator->paginate(
@@ -58,7 +58,7 @@ class IngredientController extends AbstractController
                    'success',
                    'Votre ingrédient à été crée avec succès !',
                );  
-               return $this->redirectToRoute('ingredient.index');  
+               return $this->redirectToRoute('ingredient');  
         }
 
         return $this->render('pages/ingredient/new.html.twig', [
