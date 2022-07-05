@@ -15,16 +15,30 @@ class AppFixtures extends Fixture
 {
     private Generator $faker;
 
-  
+
 
     public function __construct()
     {
         $this->faker = Factory::create('fr_FR');
-       
     }
 
     public function load(ObjectManager $manager): void
     {
+
+        // Users
+        $users = [];
+        for ($l = 0; $l < 10; $l++) {
+            $user = new User();
+            $user->setFullName($this->faker->name())
+                ->setPseudo(mt_rand(0, 1) === 1 ? $this->faker->firstName() : null)
+                ->setEmail($this->faker->email())
+                ->setRoles(['ROLE_USER'])
+                ->setPlainPassword('password');
+
+            $users[] = $user;
+            $manager->persist($user);
+        }
+
 
         //Ingredients
         $infredients = [];
@@ -32,7 +46,8 @@ class AppFixtures extends Fixture
 
             $ingredient = new Ingredient();
             $ingredient->setName($this->faker->word())
-                ->setPrice(mt_rand(0, 100));
+                ->setPrice(mt_rand(0, 100))
+                ->setUser($users[mt_rand(0, count($users) -1 )]);
             $ingredients[] = $ingredient;
             $manager->persist($ingredient);
         }
@@ -55,23 +70,7 @@ class AppFixtures extends Fixture
             $manager->persist($recipe);
         }
 
-        // Users
 
-        for ($l=0; $l < 10; $l++) 
-        { 
-            $user = new User();
-            $user->setFullName($this->faker->name())
-                ->setPseudo(mt_rand(0, 1) === 1 ? $this->faker->firstName() : null )
-                ->setEmail($this->faker->email())
-                ->setRoles(['ROLE_USER'])
-                ->setPlainPassword('password');
-
-                
-
-                
-
-                $manager->persist($user);
-        }
 
         $manager->flush();
     }
