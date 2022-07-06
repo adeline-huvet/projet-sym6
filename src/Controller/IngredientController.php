@@ -4,14 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Ingredient;
 use App\Form\IngredientType;
+use Doctrine\ORM\EntityManager;
 use App\Repository\IngredientRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Container0jRK7Ab\PaginatorInterface_82dac15;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\{TextType, ButtonType, EmailType, HiddenType, PasswordType, TextareaType, SubmitType, NumberType, DateType, MoneyType, BirthdayType};
 
@@ -27,6 +30,7 @@ class IngredientController extends AbstractController
      */
 
     #[Route('/ingredient', name: 'ingredient', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function index(IngredientRepository $repository, PaginatorInterface $paginator, Request $request): Response
     {
         $ingredients = $paginator->paginate(
@@ -41,15 +45,16 @@ class IngredientController extends AbstractController
         ]);
     }
 
-/**
- * This function allow us to create new ingredient
- * 
- * @param EntityManagerInterface $manager
- * @param Request $request
- * @return Response
- */
+    /**
+     * This function allow us to create new ingredient
+     * 
+     * @param EntityManagerInterface $manager
+     * @param Request $request
+     * @return Response
+     */
 
     #[Route('/ingredient/nouveau', name: 'ingredient.new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(Request $request, EntityManagerInterface $manager): Response
     {
         $ingredient = new Ingredient();
@@ -77,19 +82,23 @@ class IngredientController extends AbstractController
     }
 
 
-    
-/**
- * This function allow us to edit ingredient
- * 
- * @param EntityManagerInterface $manager
- * @param Ingredient $ingredient
- * @param Request $request
- * @return Response
- */
-    #[Route('ingredient/edition/{id}', 'ingredient.edit', methods: ['GET','POST'])]
-    public function edit(Ingredient $ingredient, Request $request, EntityManagerInterface $manager): Response
-    {
 
+    /**
+     * This function allow us to edit ingredient
+     * 
+     * @param EntityManagerInterface $manager
+     * @param Ingredient $ingredient
+     * @param Request $request
+     * @return Response
+     */
+    #[Route('ingredient/edition/{id}', 'ingredient.edit', methods: ['GET', 'POST'])]
+    #[Security("is_granted('ROLE_USER') and user === ingredient.getUser()")]
+    public function edit(
+        Ingredient $ingredient, 
+        Request $request, 
+        EntityManagerInterface $manager
+        ): Response
+    {
         $form = $this->createForm(IngredientType::class, $ingredient);
 
         $form->handleRequest($request);
@@ -115,19 +124,19 @@ class IngredientController extends AbstractController
         );
     }
 
-    
-/**
- * This function allow us to delete ingredient
- * 
- * @param EntityManagerInterface $manager
- * @param Ingredient $ingredient
- * @return Response
- */
+
+    /**
+     * This function allow us to delete ingredient
+     * 
+     * @param EntityManagerInterface $manager
+     * @param Ingredient $ingredient
+     * @return Response
+     */
     #[Route('/ingredient/suppression/{id}', 'ingredient.delete', methods: ['GET'])]
-    public function delete (EntityManagerInterface $manager, Ingredient $ingredient) : Response
+    public function delete(EntityManagerInterface $manager, Ingredient $ingredient): Response
     {
 
-        if(!$ingredient){
+        if (!$ingredient) {
             $this->addFlash(
 
                 'warning',
@@ -146,6 +155,5 @@ class IngredientController extends AbstractController
         );
 
         return $this->redirectToRoute('ingredient');
-
     }
 }
